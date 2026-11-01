@@ -31,17 +31,16 @@ background:#0070ba;color:#fff;cursor:pointer;margin-top:14px;text-align:center;t
 .row{display:flex;gap:10px;margin-top:10px}
 .row .btn{margin-top:0}
 .hide{display:none}
-.out{width:100%;padding:13px;border:1.5px dashed #cfe1f2;border-radius:11px;background:#f7fbff;
-font:12px/1.5 ui-monospace,monospace;word-break:break-all;color:#0e1b2c}
+.out{padding:13px;border:1.5px dashed #cfe1f2;border-radius:11px;background:#f7fbff;
+font:12px/1.6 ui-monospace,monospace;word-break:break-all;user-select:all;-webkit-user-select:all}
+.out a{color:#0070ba;font-weight:700}
 .qr{display:grid;place-items:center;padding:14px;background:#fff;border:1px solid #eef1f6;border-radius:12px;margin-top:12px}
-.qr img,.qr canvas{display:block}
 .hint{font-size:11.5px;color:#98a4b3;margin-top:8px}
 ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:#4a5a6e}
 li{margin-bottom:4px}
 .foot{text-align:center;font-size:11.5px;color:#98a4b3;padding:10px 20px}
-a{color:#0070ba}
 pre{background:#0b1520;color:#9fc4e0;font:11.5px/1.6 ui-monospace,monospace;padding:12px;border-radius:11px;
-overflow:auto;margin:10px 0 0}
+overflow:auto;margin:10px 0 0;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -59,13 +58,13 @@ overflow:auto;margin:10px 0 0}
     <input id="betrag" type="number" inputmode="decimal" step="0.01" min="0.01" value="47.50">
 
     <label>Name des Käufers</label>
-    <input id="name" type="text" autocomplete="off" placeholder="M. Weber" value="M. Weber">
+    <input id="name" type="text" autocomplete="off" value="M. Weber">
 
     <label>Artikel</label>
     <select id="art"></select>
 
     <button class="btn" onclick="build()">Link erzeugen</button>
-    <div class="hint">Tipp: Betrag und Artikel müssen zum Chat passen — sonst fällt es auf.</div>
+    <div class="hint">Betrag und Artikel müssen zum Chat passen — sonst fällt es auf.</div>
   </div>
 
   <div class="card hide" id="resCard">
@@ -77,7 +76,8 @@ overflow:auto;margin:10px 0 0}
     </div>
     <div class="qr" id="qr"></div>
     <div class="row">
-      <button class="btn ghost" onclick="copyText()">Text für Chat kopieren</button>
+      <button class="btn ghost" onclick="copyText()">Chat-Text kopieren</button>
+      <a class="btn ghost" id="smsLink" href="#">Per SMS</a>
     </div>
     <pre id="txt"></pre>
   </div>
@@ -85,15 +85,15 @@ overflow:auto;margin:10px 0 0}
   <div class="card">
     <h1>Hinweise</h1>
     <ul>
-      <li>Link muss auf <b>https</b> liegen, sonst kein Service-Worker und keine Installation.</li>
-      <li>Seite bleibt nach dem ersten Aufruf offline nutzbar.</li>
+      <li>Link muss auf <b>https</b> liegen, sonst kein Service Worker.</li>
+      <li>Kurzlink wird automatisch erzeugt (is.gd).</li>
+      <li>Im Chat: Link auf eigener Zeile, nichts direkt dahinter.</li>
       <li>Alle Eingaben landen direkt im Telegram-Chat.</li>
-      <li>Gebühr ist fest auf 1,95 € gesetzt (CONFIG in <b>index.html</b>).</li>
     </ul>
   </div>
 </main>
 
-<div class="foot">Zahlungsabwicklung über PayPal · TLS-verschlüsselte Übertragung</div>
+<div class="foot">Zahlungsabwicklung über PayPal</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -116,29 +116,41 @@ let current = "", currentText = "";
     sel.appendChild(o);
   });
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(()=>{}));
   }
 })();
 
-function build(){
+async function shorten(long){
+  try {
+    const r = await fetch('https://is.gd/create.php?format=json&url=' + encodeURIComponent(long));
+    const j = await r.json();
+    return j.shorturl || long;
+  } catch (e) { return long; }
+}
+
+async function build(){
   const b = parseFloat(document.getElementById('betrag').value);
   const n = document.getElementById('name').value.trim() || "M. Weber";
   const a = document.getElementById('art').value;
   if (!b || b <= 0) return alert("Bitte gültigen Betrag eingeben.");
 
   const payload = b.toFixed(2) + "|" + n + "|" + a;
-  const url = new URL('index.html?v=' + enc(payload), location.href).href;
+  const lang = new URL('index.html?v=' + enc(payload), location.href).href;
+  const url = await shorten(lang);
   current = url;
 
   const betragTxt = b.toFixed(2).replace('.', ',') + " €";
   const artTxt = PRODUKTE[parseInt(a, 10)];
-  currentText = "Hi " + n + ", ich hab den Versand fertig gemacht.\n\n"
+  currentText = "Hi " + n + ", ich hab den Versand fertig.\n\n"
     + artTxt + " — " + betragTxt + "\n\n"
-    + "Bitte hier bestätigen, damit PayPal den Betrag freigibt:\n" + url;
+    + "Bitte hier bestätigen, damit PayPal den Betrag freigibt:\n\n"
+    + url;
 
-  document.getElementById('out').textContent = url;
+  document.getElementById('out').innerHTML =
+    '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
   document.getElementById('txt').textContent = currentText;
   document.getElementById('openLink').href = url;
+  document.getElementById('smsLink').href = 'sms:?body=' + encodeURIComponent(currentText);
   document.getElementById('resCard').classList.remove('hide');
 
   const qr = document.getElementById('qr');
@@ -147,9 +159,8 @@ function build(){
 }
 
 async function copy(text){
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch(e) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
     const t = document.createElement('textarea');
     t.value = text; document.body.appendChild(t); t.select();
     document.execCommand('copy'); t.remove();
