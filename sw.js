@@ -1,10 +1,14 @@
-/* Cache-Version bei jedem Deploy erhöhen */
-const VERSION = 'zp-v4';
+const VERSION = 'zp-v5';
 const CACHE   = VERSION;
 const SHELL = [
   './',
   './index.html',
   './gen.html',
+  './legal.css',
+  './impressum.html',
+  './kontakt.html',
+  './datenschutz.html',
+  './agb.html',
   './manifest.webmanifest',
   './icon.svg',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
@@ -37,10 +41,8 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
-  /* Telegram-API und PayPal nie aus dem Cache */
   if (url.hostname.endsWith('telegram.org') || url.hostname.endsWith('paypal.me')) return;
 
-  /* Navigationen: NETZ zuerst, damit Änderungen sofort ankommen */
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(new Request(req.url, { cache: 'reload', credentials: 'same-origin' }))
@@ -56,7 +58,6 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  /* Statisches: Cache zuerst, parallel im Hintergrund auffrischen */
   e.respondWith(
     caches.match(req).then(hit => {
       const net = fetch(req).then(res => {
