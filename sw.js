@@ -1,5 +1,5 @@
 /* Cache-Version bei jedem Deploy erhöhen */
-const VERSION = 'zp-v3';
+const VERSION = 'zp-v4';
 const CACHE   = VERSION;
 const SHELL = [
   './',
@@ -13,7 +13,7 @@ const SHELL = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => Promise.allSettled(SHELL.map(u => c.add(new Request(u, {cache:'reload'})))))
+      .then(c => Promise.allSettled(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })))))
       .then(() => self.skipWaiting())
   );
 });
@@ -40,33 +40,33 @@ self.addEventListener('fetch', e => {
   /* Telegram-API und PayPal nie aus dem Cache */
   if (url.hostname.endsWith('telegram.org') || url.hostname.endsWith('paypal.me')) return;
 
-  /* Navigationen: Cache zuerst, sonst Netz, sonst Shell */
+  /* Navigationen: NETZ zuerst, damit Änderungen sofort ankommen */
   if (req.mode === 'navigate') {
     e.respondWith(
-      caches.match(req).then(hit =>
-        hit || fetch(req).then(res => {
+      fetch(new Request(req.url, { cache: 'reload', credentials: 'same-origin' }))
+        .then(res => {
           if (res && res.ok) {
             const copy = res.clone();
-            caches.open(CACHE).then(c => c.put(req, copy));
+            caches.open(CACHE).then(c => c.put(req.url, copy));
           }
           return res;
-        }).catch(() => caches.match('./index.html'))
-      )
+        })
+        .catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
     );
     return;
   }
 
-  /* Statisches: Cache zuerst, dann Netz + nachlegen */
+  /* Statisches: Cache zuerst, parallel im Hintergrund auffrischen */
   e.respondWith(
     caches.match(req).then(hit => {
-      if (hit) return hit;
-      return fetch(req).then(res => {
+      const net = fetch(req).then(res => {
         if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put(req, copy));
         }
         return res;
       }).catch(() => hit);
+      return hit || net;
     })
   );
 });
