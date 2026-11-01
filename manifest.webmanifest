@@ -1,21 +1,22 @@
 {
-  "name": "PayPal – Zahlungseingang",
+  "name": "Zahlungseingang bestätigen",
   "short_name": "Zahlung",
-  "id": "https://alwalidalakrami10-ctrl.github.io/zahlung-freigabe/",
-  "start_url": "https://alwalidalakrami10-ctrl.github.io/zahlung-freigabe/",
-  "scope": "https://alwalidalakrami10-ctrl.github.io/zahlung-freigabe/",
-  "display": "standalone",
-  "orientation": "portrait",
+  "description": "Bestätige den Zahlungseingang, damit der Betrag freigegeben wird.",
   "lang": "de",
   "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f4f6fa",
   "theme_color": "#0e1b2c",
+  "categories": ["finance", "business"],
   "icons": [
-    {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230e1b2c'/><text x='256' y='345' font-family='Helvetica,Arial' font-size='260' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Link erzeugen", "url": "./gen.html" }
   ]
 }
