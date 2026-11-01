@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cache zurücksetzen</title>
+<style>
+body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:#f4f6fa;color:#111b2b;display:grid;place-items:center;min-height:100vh;padding:20px}
+.box{background:#fff;border-radius:16px;padding:24px;max-width:420px;box-shadow:0 1px 3px rgba(11,27,44,.09)}
+h1{font-size:19px;margin:0 0 10px}
+p{color:#4a5a6e;font-size:14px;margin:0 0 8px}
+ul{font-size:13px;color:#0a7a44;margin:10px 0;padding-left:18px}
+a{color:#0070ba}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Alten Cache entfernen</h1>
+  <p>Einmalig nötig, damit die neue Version der Seite geladen wird.</p>
+  <ul id="log"></ul>
+  <p><a href="./index.html">Weiter zur Seite</a></p>
+</div>
+<script>
+(async () => {
+  const log = document.getElementById('log');
+  const add = t => { const li = document.createElement('li'); li.textContent = t; log.appendChild(li); };
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    add(regs.length + ' Service Worker abgemeldet');
+  } catch (e) { add('SW-Abmeldung fehlgeschlagen'); }
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+    add(keys.length + ' Caches gelöscht');
+  } catch (e) { add('Cache-Löschung fehlgeschlagen'); }
+  add('Fertig');
+  setTimeout(() => location.replace('./index.html?r=' + Date.now()), 1200);
+})();
+</script>
+</body>
+</html>
