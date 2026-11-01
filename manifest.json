@@ -1,0 +1,11 @@
+{
+  "name": "Treuhand Direkt – Auszahlungsportal",
+  "short_name": "Auszahlung",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6fa",
+  "theme_color": "#0e1b2c",
+  "icons": [
+    { "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230e1b2c'/><text x='256' y='330' font-family='Helvetica,Arial' font-size='220' font-weight='bold' fill='white' text-anchor='middle'>TD</text></svg>", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
